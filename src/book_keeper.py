@@ -4,8 +4,8 @@ import time
 
 class BookKeeper:
 
-    name = ""
-    bid_list = ""
+    name = "test"
+    bid_list = []
     thread_handle = ""
 
 
