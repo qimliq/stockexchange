@@ -28,6 +28,10 @@ class BookKeeper:
             new_ask = True
             new_bid = True
 
+            def fcn(a):
+                c = a.get_value()
+                return c
+
             if type == ASK_TYPE:
                 #find the container
                 for ask_container in self.asks:
@@ -40,6 +44,8 @@ class BookKeeper:
                     new_container.add_order(order_message)
                     self.asks.append(new_container)
 
+                self.asks = sorted(self.asks, key=fcn, reverse=True)
+
             if type == BID_TYPE:
                 # find the container
                 for bid_container in self.bids:
@@ -51,6 +57,8 @@ class BookKeeper:
                     new_container = OrderContainer(type=BID_TYPE, value=value)
                     new_container.add_order(order_message)
                     self.bids.append(new_container)
+
+                self.bids = sorted(self.bids, key=fcn, reverse=True)
 
             logging.debug("[New order] Type: %d  Value: %0.2f  Amount: %d", order_message.get_type()
                          , order_message.get_value()
