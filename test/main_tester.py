@@ -14,6 +14,7 @@ if __name__ == "__main__":
     keeper = BookKeeper("test")
 
     for i in range(1000):
+        logging.info("---------------------------------%d",i)
         type = random.randint(0,1)
         value = round(random.uniform(4,6),1)
         amount = random.randint(100,10000)

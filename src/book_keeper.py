@@ -56,15 +56,11 @@ class BookKeeper:
                          , order_message.get_value()
                          , order_message.get_amount())
 
-            logging.info("------------------------------------------------------")
-
             for ask in self.asks:
                 logging.info("[Ask] [%0.2f]",ask.get_value())
 
             for bid in self.bids:
                 logging.info("[Bid] [%0.2f]",bid.get_value())
-
-            logging.info("------------------------------------------------------")
 
 
 
