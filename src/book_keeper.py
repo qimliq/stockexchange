@@ -18,57 +18,92 @@ class BookKeeper:
     #Buyers will be added to bids list
     bids = []
 
+    def process_order(self, order):
+        type = order.get_type()
+        value = order.get_value()
+        amount = order.get_amount()
 
-    def keeper_thread_function(self,name):
-        while True:
-            order_message = self.messageq.get()
-            type = order_message.get_type()
-            value = order_message.get_value()
-            amount = order_message.get_amount()
-            new_ask = True
-            new_bid = True
+        new_ask = True
+        new_bid = True
+        def fcn(a):
+            c = a.get_value()
+            return c
 
-            def fcn(a):
-                c = a.get_value()
-                return c
+        if type == ASK_TYPE:
+            matched = False
+            # for bid_container in self.bids:
+            #     if value >= bid_container.get_value():
+            #         for item in list(bid_container.get_orders().queue):
+            #             if amount <= item.get_amount():
+            #                 item.set_amount(item.get_amount() - amount)
+            #             else:
+            #                 item.set_amount(0)
+            #                 amount = amount - item.get_amount()
+            #                 bid_container.remove_order()
+            #                 matched = True
 
-            if type == ASK_TYPE:
-                #find the container
+            if matched == False:
+                # find the container
                 for ask_container in self.asks:
                     if value == ask_container.get_value():
-                        ask_container.add_order(order_message)
+                        ask_container.add_order(order)
                         new_ask = False
                         break
                 if new_ask == True:
-                    new_container = OrderContainer(type=ASK_TYPE, value= value)
-                    new_container.add_order(order_message)
+                    new_container = OrderContainer(type=ASK_TYPE, value=value)
+                    new_container.add_order(order)
                     self.asks.append(new_container)
 
-                self.asks = sorted(self.asks, key=fcn, reverse=True)
+            self.asks = sorted(self.asks, key=fcn, reverse=True)
 
-            if type == BID_TYPE:
+        if type == BID_TYPE:
+            matched = False
+            # for ask_container in reversed(self.asks):
+            #     if value >= ask_container.get_value():
+            #         for item in list(ask_container.get_orders().queue):
+            #             if amount <= item.get_amount():
+            #                 item.set_amount( item.get_amount() - amount)
+            #             else:
+            #                 item.set_amount(0)
+            #                 amount = amount - item.get_amount()
+            #                 ask_container.remove_order()
+            #                 matched = True
+
+            if matched == False:
                 # find the container
                 for bid_container in self.bids:
                     if value == bid_container.get_value():
-                        bid_container.add_order(order_message)
+                        bid_container.add_order(order)
                         new_bid = False
                         break
                 if new_bid == True:
                     new_container = OrderContainer(type=BID_TYPE, value=value)
-                    new_container.add_order(order_message)
+                    new_container.add_order(order)
                     self.bids.append(new_container)
 
-                self.bids = sorted(self.bids, key=fcn, reverse=True)
+            self.bids = sorted(self.bids, key=fcn, reverse=True)
 
-            logging.debug("[New order] Type: %d  Value: %0.2f  Amount: %d", order_message.get_type()
+    def keeper_thread_function(self,name):
+        while True:
+            order_message = self.messageq.get()
+
+            self.process_order(order_message)
+
+            logging.info("[New order] Type: %d  Value: %0.2f  Amount: %d", order_message.get_type()
                          , order_message.get_value()
                          , order_message.get_amount())
 
             for ask in self.asks:
-                logging.info("[Ask] [%0.2f]",ask.get_value())
+                amnt_str = ""
+                for item in list(ask.get_orders().queue):
+                    amnt_str += "%d |" % (item.get_amount())
+                logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
 
             for bid in self.bids:
-                logging.info("[Bid] [%0.2f]",bid.get_value())
+                amnt_str = ""
+                for item in list(bid.get_orders().queue):
+                    amnt_str += "%d |" % (item.get_amount())
+                logging.info("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
 
 
 

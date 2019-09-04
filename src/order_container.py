@@ -21,5 +21,8 @@ class OrderContainer:
     def add_order(self,order):
         self.order_queue.put(order)
 
-    def remover_order(self):
+    def remove_order(self):
         return self.order_queue.get()
+
+    def get_orders(self):
+        return self.order_queue

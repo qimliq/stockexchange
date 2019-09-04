@@ -21,3 +21,6 @@ class Order:
     def get_amount(self):
         return self.order_amount
 
+    def set_amount(self, amount):
+        self.order_amount = amount
+
