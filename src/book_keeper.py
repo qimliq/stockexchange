@@ -31,16 +31,16 @@ class BookKeeper:
 
         if type == ASK_TYPE:
             matched = False
-            # for bid_container in self.bids:
-            #     if value >= bid_container.get_value():
-            #         for item in list(bid_container.get_orders().queue):
-            #             if amount <= item.get_amount():
-            #                 item.set_amount(item.get_amount() - amount)
-            #             else:
-            #                 item.set_amount(0)
-            #                 amount = amount - item.get_amount()
-            #                 bid_container.remove_order()
-            #                 matched = True
+            for bid_container in self.bids:
+                if value >= bid_container.get_value():
+                    for item in list(bid_container.get_orders().queue):
+                        if amount <= item.get_amount():
+                            item.set_amount(item.get_amount() - amount)
+                        else:
+                            item.set_amount(0)
+                            amount = amount - item.get_amount()
+                            bid_container.remove_order()
+                            matched = True
 
             if matched == False:
                 # find the container
@@ -58,16 +58,16 @@ class BookKeeper:
 
         if type == BID_TYPE:
             matched = False
-            # for ask_container in reversed(self.asks):
-            #     if value >= ask_container.get_value():
-            #         for item in list(ask_container.get_orders().queue):
-            #             if amount <= item.get_amount():
-            #                 item.set_amount( item.get_amount() - amount)
-            #             else:
-            #                 item.set_amount(0)
-            #                 amount = amount - item.get_amount()
-            #                 ask_container.remove_order()
-            #                 matched = True
+            for ask_container in reversed(self.asks):
+                if value >= ask_container.get_value():
+                    for item in list(ask_container.get_orders().queue):
+                        if amount <= item.get_amount():
+                            item.set_amount( item.get_amount() - amount)
+                        else:
+                            item.set_amount(0)
+                            amount = amount - item.get_amount()
+                            ask_container.remove_order()
+                            matched = True
 
             if matched == False:
                 # find the container

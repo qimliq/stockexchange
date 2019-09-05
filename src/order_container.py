@@ -4,13 +4,14 @@ BID_TYPE = 0
 ASK_TYPE = 1
 
 class OrderContainer:
-    order_type = BID_TYPE
-    order_queue = queue.Queue()
-    order_value = 0
+    order_type = None
+    order_queue = None
+    order_value = None
 
     def __init__(self, type, value):
         self.order_type = type
         self.order_value = value
+        self.order_queue = queue.Queue()
 
     def get_type(self):
         return self.order_type
