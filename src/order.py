@@ -15,6 +15,12 @@ class Order:
     def get_type(self):
         return self.order_type
 
+    def get_type_str(self):
+        if self.order_type == 0:
+            return "Bid"
+        else:
+            return "Ask"
+
     def get_value(self):
         return self.order_value
 

@@ -11,6 +11,7 @@ class BookKeeper:
     bid_list = []
     thread_handle = ""
     messageq = queue.Queue()
+    latest_price = None
 
     #Sellers will be added to asks list
     asks = []
@@ -32,17 +33,21 @@ class BookKeeper:
         if type == ASK_TYPE:
             matched = False
             for bid_container in self.bids:
-                if value >= bid_container.get_value():
+                if value <= bid_container.get_value():
+                    matched = True
+                    self.latest_price = bid_container.get_value()
                     for item in list(bid_container.get_orders().queue):
-                        if amount <= item.get_amount():
+                        if amount < item.get_amount():
                             item.set_amount(item.get_amount() - amount)
+                            break
                         else:
-                            item.set_amount(0)
                             amount = amount - item.get_amount()
+                            item.set_amount(0)
                             bid_container.remove_order()
-                            matched = True
+                            if bid_container.get_orders().empty() is True:
+                                self.bids.remove(bid_container)
 
-            if matched == False:
+            if matched is False:
                 # find the container
                 for ask_container in self.asks:
                     if value == ask_container.get_value():
@@ -60,16 +65,20 @@ class BookKeeper:
             matched = False
             for ask_container in reversed(self.asks):
                 if value >= ask_container.get_value():
+                    matched = True
+                    self.latest_price = ask_container.get_value()
                     for item in list(ask_container.get_orders().queue):
-                        if amount <= item.get_amount():
+                        if amount < item.get_amount():
                             item.set_amount( item.get_amount() - amount)
+                            break
                         else:
-                            item.set_amount(0)
                             amount = amount - item.get_amount()
+                            item.set_amount(0)
                             ask_container.remove_order()
-                            matched = True
+                            if ask_container.get_orders().empty() is True:
+                                self.asks.remove(ask_container)
 
-            if matched == False:
+            if matched is False:
                 # find the container
                 for bid_container in self.bids:
                     if value == bid_container.get_value():
@@ -89,7 +98,7 @@ class BookKeeper:
 
             self.process_order(order_message)
 
-            logging.info("[New order] Type: %d  Value: %0.2f  Amount: %d", order_message.get_type()
+            logging.info("[New order] Type: %s  Value: %0.2f  Amount: %d", order_message.get_type_str()
                          , order_message.get_value()
                          , order_message.get_amount())
 
@@ -98,6 +107,9 @@ class BookKeeper:
                 for item in list(ask.get_orders().queue):
                     amnt_str += "%d |" % (item.get_amount())
                 logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
+
+            if self.latest_price is not None:
+                logging.info("---------------------------------------------------[Latest Price] [%0.2f]", self.latest_price)
 
             for bid in self.bids:
                 amnt_str = ""
