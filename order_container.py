@@ -3,6 +3,7 @@ import queue
 BID_TYPE = 0
 ASK_TYPE = 1
 
+
 class OrderContainer:
     order_type = None
     order_queue = None

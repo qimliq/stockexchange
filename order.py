@@ -4,6 +4,7 @@ from decimal import *
 getcontext().prec =2
 
 
+
 class Order:
     order_type = BID_TYPE
     order_value = round(0.0,2)

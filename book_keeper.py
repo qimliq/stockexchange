@@ -1,9 +1,10 @@
-import threading
 import logging
-import time
 import queue
-from src.order_container import OrderContainer,BID_TYPE,ASK_TYPE
-from src.order import Order
+import threading
+
+from order_container import OrderContainer,BID_TYPE,ASK_TYPE
+
+
 
 class BookKeeper:
 
@@ -83,7 +84,7 @@ class BookKeeper:
                     self.latest_price = ask_container.get_value()
                     for item in list(ask_container.get_orders().queue):
                         if amount <= item.get_amount():
-                            item.set_amount( item.get_amount() - amount)
+                            item.set_amount(item.get_amount() - amount)
                             amount = 0
                             break
                         else:
@@ -118,11 +119,11 @@ class BookKeeper:
         while True:
             order_message = self.messageq.get()
 
-            self.process_order(order_message)
-
             logging.info("[New order] Type: %s  Value: %0.2f  Amount: %d", order_message.get_type_str()
                          , order_message.get_value()
                          , order_message.get_amount())
+
+            self.process_order(order_message)
 
             for ask in self.asks:
                 amnt_str = ""
