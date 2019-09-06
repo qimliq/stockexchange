@@ -45,7 +45,7 @@ if __name__ == "__main__":
         # value = value + 0.1
         time.sleep(0.25)
 
-    for i in range(100000):
+    for i in range(100):
         logging.info("---------------------------------%d",i)
         type = random.randint(0,1)
         value = round(random.uniform(4,6),1)
@@ -54,6 +54,12 @@ if __name__ == "__main__":
         order = Order(type, value, amount)
         keeper.send_message(order)
         time.sleep(0.25)
+
+    value = round(4.10, 2)
+    type = 1
+    amount = 1000000
+    order = Order(type, value, amount)
+    keeper.send_message(order)
 
     logging.info("Main    : all done")
 
