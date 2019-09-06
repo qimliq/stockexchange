@@ -34,11 +34,11 @@ class BookKeeper:
             matched = False
             for bid_container in self.bids:
                 if value <= bid_container.get_value():
-                    matched = True
                     self.latest_price = bid_container.get_value()
                     for item in list(bid_container.get_orders().queue):
                         if amount < item.get_amount():
                             item.set_amount(item.get_amount() - amount)
+                            amount = 0
                             break
                         else:
                             amount = amount - item.get_amount()
@@ -46,6 +46,9 @@ class BookKeeper:
                             bid_container.remove_order()
                             if bid_container.get_orders().empty() is True:
                                 self.bids.remove(bid_container)
+                    if amount == 0:
+                        matched = True
+                        break
 
             if matched is False:
                 # find the container
@@ -65,11 +68,11 @@ class BookKeeper:
             matched = False
             for ask_container in reversed(self.asks):
                 if value >= ask_container.get_value():
-                    matched = True
                     self.latest_price = ask_container.get_value()
                     for item in list(ask_container.get_orders().queue):
                         if amount < item.get_amount():
                             item.set_amount( item.get_amount() - amount)
+                            amount = 0
                             break
                         else:
                             amount = amount - item.get_amount()
@@ -77,6 +80,10 @@ class BookKeeper:
                             ask_container.remove_order()
                             if ask_container.get_orders().empty() is True:
                                 self.asks.remove(ask_container)
+
+                    if amount == 0:
+                        matched = True
+                        break
 
             if matched is False:
                 # find the container

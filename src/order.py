@@ -1,10 +1,12 @@
 BID_TYPE = 0
 ASK_TYPE = 1
+from decimal import *
+getcontext().prec =2
 
 
 class Order:
     order_type = BID_TYPE
-    order_value = 0
+    order_value = round(0.0,2)
     order_amount = 0
 
     def __init__(self, type, value, amount):
@@ -22,7 +24,7 @@ class Order:
             return "Ask"
 
     def get_value(self):
-        return self.order_value
+        return round(self.order_value,2)
 
     def get_amount(self):
         return self.order_amount
