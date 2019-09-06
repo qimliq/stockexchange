@@ -19,6 +19,15 @@ class BookKeeper:
     #Buyers will be added to bids list
     bids = []
 
+    def clean_containers(self):
+        for ask_container in self.asks:
+            if ask_container.get_orders().empty() is True:
+                self.asks.remove(ask_container)
+
+        for bid_container in self.bids:
+            if bid_container.get_orders().empty() is True:
+                self.bids.remove(bid_container)
+
     def process_order(self, order):
         type = order.get_type()
         value = order.get_value()
@@ -32,20 +41,22 @@ class BookKeeper:
 
         if type == ASK_TYPE:
             matched = False
-            for bid_container in self.bids:
+            for i in range(len(self.bids)):
+                bid_container = self.bids[i]
                 if value <= bid_container.get_value():
                     self.latest_price = bid_container.get_value()
                     for item in list(bid_container.get_orders().queue):
-                        if amount < item.get_amount():
+                        if amount <= item.get_amount():
                             item.set_amount(item.get_amount() - amount)
                             amount = 0
                             break
                         else:
                             amount = amount - item.get_amount()
                             item.set_amount(0)
+                            order.set_amount(amount)
                             bid_container.remove_order()
-                            if bid_container.get_orders().empty() is True:
-                                self.bids.remove(bid_container)
+                            # if bid_container.get_orders().empty() is True:
+                            #     self.bids.remove(bid_container)
                     if amount == 0:
                         matched = True
                         break
@@ -66,20 +77,22 @@ class BookKeeper:
 
         if type == BID_TYPE:
             matched = False
-            for ask_container in reversed(self.asks):
+            for i in range(len(self.asks)):
+                ask_container = list(reversed(self.asks))[i]
                 if value >= ask_container.get_value():
                     self.latest_price = ask_container.get_value()
                     for item in list(ask_container.get_orders().queue):
-                        if amount < item.get_amount():
+                        if amount <= item.get_amount():
                             item.set_amount( item.get_amount() - amount)
                             amount = 0
                             break
                         else:
                             amount = amount - item.get_amount()
                             item.set_amount(0)
+                            order.set_amount(amount)
                             ask_container.remove_order()
-                            if ask_container.get_orders().empty() is True:
-                                self.asks.remove(ask_container)
+                            # if ask_container.get_orders().empty() is True:
+                            #     self.asks.remove(ask_container)
 
                     if amount == 0:
                         matched = True
@@ -99,6 +112,8 @@ class BookKeeper:
 
             self.bids = sorted(self.bids, key=fcn, reverse=True)
 
+        # self.clean_containers()
+
     def keeper_thread_function(self,name):
         while True:
             order_message = self.messageq.get()
@@ -113,7 +128,9 @@ class BookKeeper:
                 amnt_str = ""
                 for item in list(ask.get_orders().queue):
                     amnt_str += "%d |" % (item.get_amount())
-                logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
+
+                if amnt_str is not "":
+                    logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
 
             if self.latest_price is not None:
                 logging.info("---------------------------------------------------[Latest Price] [%0.2f]", self.latest_price)
@@ -122,7 +139,8 @@ class BookKeeper:
                 amnt_str = ""
                 for item in list(bid.get_orders().queue):
                     amnt_str += "%d |" % (item.get_amount())
-                logging.info("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
+                if amnt_str is not "":
+                    logging.info("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
 
 
 
