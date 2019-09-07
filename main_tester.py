@@ -65,17 +65,17 @@ if __name__ == "__main__":
 
         value = round(4.00, 2)
         type = ASK_TYPE
-        amount = 2000000
+        amount = 1000000
         order = Order(type, value, amount)
         keeper.send_message(order)
 
 
         for i in range(1000):
             system('clear')
-            logging.info("---------------------------------%d",i)
+            logging.info("0-----------------%d---------------%d",k,i)
             type = random.randint(0,1)
             value = round(random.uniform(4,6),1)
-            amount = random.randint(100,100000)
+            amount = random.randint(100,10000)
             # amount = random.randint(1,10) * 100
             order = Order(type, value, amount)
             keeper.send_message(order)
@@ -84,9 +84,20 @@ if __name__ == "__main__":
 
         value = round(6.00, 2)
         type = BID_TYPE
-        amount = 2000000
+        amount = 1000000
         order = Order(type, value, amount)
         keeper.send_message(order)
+
+        for i in range(1000):
+            system('clear')
+            logging.info("1-----------------%d---------------%d", k, i)
+            type = random.randint(0,1)
+            value = round(random.uniform(4,6),1)
+            amount = random.randint(100,10000)
+            # amount = random.randint(1,10) * 100
+            order = Order(type, value, amount)
+            keeper.send_message(order)
+            time.sleep(0.1)
 
     logging.info("Main    : all done")
 

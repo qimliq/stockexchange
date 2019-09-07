@@ -45,8 +45,8 @@ class BookKeeper:
             for i in range(len(self.bids)):
                 bid_container = self.bids[i]
                 if value <= bid_container.get_value():
-                    self.latest_price = bid_container.get_value()
                     for item in list(bid_container.get_orders().queue):
+                        self.latest_price = bid_container.get_value()
                         if amount <= item.get_amount():
                             item.set_amount(item.get_amount() - amount)
                             amount = 0
@@ -81,8 +81,8 @@ class BookKeeper:
             for i in range(len(self.asks)):
                 ask_container = list(reversed(self.asks))[i]
                 if value >= ask_container.get_value():
-                    self.latest_price = ask_container.get_value()
                     for item in list(ask_container.get_orders().queue):
+                        self.latest_price = ask_container.get_value()
                         if amount <= item.get_amount():
                             item.set_amount(item.get_amount() - amount)
                             amount = 0
