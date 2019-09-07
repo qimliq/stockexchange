@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
         value = round(4.00, 2)
         type = ASK_TYPE
-        amount = 1000000
+        amount = random.randint(0,4) * 1000000
         order = Order(type, value, amount)
         keeper.send_message(order)
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
         value = round(6.00, 2)
         type = BID_TYPE
-        amount = 1000000
+        amount = random.randint(0,4) * 1000000
         order = Order(type, value, amount)
         keeper.send_message(order)
 
