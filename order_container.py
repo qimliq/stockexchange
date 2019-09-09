@@ -20,11 +20,17 @@ class OrderContainer:
     def get_value(self):
         return self.order_value
 
-    def add_order(self,order):
+    def add_new_order(self, order):
         self.order_queue.put(order)
 
-    def remove_order(self):
+    def get_next_order(self):
         return self.order_queue.get()
+
+    def edit_order(self, id, value, amount):
+        return 0
+
+    def cancel_order(self, id):
+        return 0
 
     def get_orders(self):
         return self.order_queue
