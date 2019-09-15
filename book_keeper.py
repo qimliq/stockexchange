@@ -116,6 +116,7 @@ class BookKeeper:
         # self.clean_containers()
 
     def keeper_thread_function(self,name):
+        logging.info("BookKeeper for [%s] started", name)
         while True:
             order_message = self.messageq.get()
 

@@ -3,14 +3,11 @@ import queue
 import threading
 from book_keeper import BookKeeper
 
-assets = ["Asset 1", "Asset 2","Asset 3","Asset 4","Asset 5"]
-
-
 
 class Exchange:
 
     name = "TestExchange"
-    asset_list = []
+    assets = []
     thread_handle = ""
     messageq = queue.Queue()
     latest_price = None
@@ -30,10 +27,12 @@ class Exchange:
             self.process_order(order_message)
 
     def __init__(self,
-                 nm):
-        for asset in assets:
-            keeper = BookKeeper(nm=asset)
-            self.asset_list.append(keeper)
+                 nm,
+                 asset_names):
+        for asset in asset_names:
+            keeper = BookKeeper(nm=asset['name'])
+            self.assets.append(keeper)
+
         self.name = nm
         self.thread_handle = threading.Thread(target=self.exchange_thread_function, args=(nm,))
         self.thread_handle.start()
