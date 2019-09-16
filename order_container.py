@@ -1,7 +1,6 @@
 import queue
 
-BID_TYPE = 0
-ASK_TYPE = 1
+from constants import BID_TYPE,ASK_TYPE
 
 
 class OrderContainer:

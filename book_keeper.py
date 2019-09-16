@@ -2,8 +2,8 @@ import logging
 import queue
 import threading
 
-from order_container import OrderContainer,BID_TYPE,ASK_TYPE
-
+from order_container import OrderContainer
+from constants import BID_TYPE, ASK_TYPE
 
 
 class BookKeeper:

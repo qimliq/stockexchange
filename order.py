@@ -1,19 +1,23 @@
-BID_TYPE = 0
-ASK_TYPE = 1
+from constants import BID_TYPE,ASK_TYPE
 from decimal import *
 getcontext().prec =2
 
 
 
 class Order:
+    asset_id = None
     order_type = BID_TYPE
     order_value = round(0.0,2)
     order_amount = 0
 
-    def __init__(self, type, value, amount):
+    def __init__(self, asset, type, value, amount):
+        self.asset_id = asset
         self.order_type = type
         self.order_value = value
         self.order_amount = amount
+
+    def get_asset_id(self):
+        return self.asset_id
 
     def get_type(self):
         return self.order_type
