@@ -2,6 +2,9 @@ import logging
 import queue
 import threading
 
+from command import Command
+from constants import RESPONSE
+
 class Broker:
 
     id = None
@@ -12,7 +15,16 @@ class Broker:
     exchange = None
 
     def process_command(self, cmd):
-        return 0
+
+        type = cmd.get_type()
+
+        if type != RESPONSE:
+            payload = {"broker":self, "subcommand":cmd}
+            exchange_cmd = Command(type=type, payload=payload)
+            self.exchange.send_message(exchange_cmd)
+        else:
+            print("to investor")
+
 
     def broker_thread_function(self,id):
         while True:

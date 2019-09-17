@@ -2,7 +2,7 @@ import logging
 import queue
 import threading
 from book_keeper import BookKeeper
-
+from constants import NEW_ORDER,EDIT_ORDER,CANCEL_ORDER,GET_LAST_PRICE,RESPONSE
 
 class Exchange:
 
@@ -12,25 +12,51 @@ class Exchange:
     messageq = queue.Queue()
     latest_price = None
 
+    def find_book_keeper(self,id):
+        bookkeeper = None
+        for keeper in self.assets:
+            keeper_id = keeper.get_id()
+            if keeper_id == id:
+                bookkeeper = keeper
+                break
+        return bookkeeper
 
-    def process_order(self, order):
+    def process_command(self, cmd):
+        type = cmd.get_type()
+
+        if type != RESPONSE:
+            payload = cmd.get_payload()
+            subcmd = payload['subcommand']
+
+            subcmd_payload = subcmd.get_payload()
+
+            investor_id = subcmd_payload['investor']
+            order = subcmd_payload['order']
+
+            asset_id = order.get_asset_id()
+
+            keeper = self.find_book_keeper(asset_id)
+
+            if keeper != None:
+                keeper.send_message(cmd)
+        else:
+            print("to broker")
+
         return 0
 
     def exchange_thread_function(self,name):
         while True:
-            order_message = self.messageq.get()
+            command = self.messageq.get()
 
-            logging.info("[New order] Type: %s  Value: %0.2f  Amount: %d", order_message.get_type_str()
-                         , order_message.get_value()
-                         , order_message.get_amount())
+            logging.info("[Exchange] [New command] Type: %d", command.get_type())
 
-            self.process_order(order_message)
+            self.process_command(command)
 
     def __init__(self,
                  nm,
                  asset_names):
         for asset in asset_names:
-            keeper = BookKeeper(nm=asset['name'])
+            keeper = BookKeeper(nm=asset['name'], id=asset['id'])
             self.assets.append(keeper)
 
         self.name = nm

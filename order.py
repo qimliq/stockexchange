@@ -10,8 +10,8 @@ class Order:
     order_value = round(0.0,2)
     order_amount = 0
 
-    def __init__(self, asset, type, value, amount):
-        self.asset_id = asset
+    def __init__(self, assetid, type, value, amount):
+        self.asset_id = assetid
         self.order_type = type
         self.order_value = value
         self.order_amount = amount

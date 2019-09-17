@@ -56,12 +56,14 @@ class Investor:
                 return
         self.assets.append(asset)
 
-    def buy(self, asset, price, amount):
-        order = Order(type=BID_TYPE, asset=asset, price=price, amount=amount)
-        cmd = Command(type=NEW_ORDER,payload=order)
+    def buy(self, assetid, price, amount):
+        order = Order(type=BID_TYPE, assetid=assetid, value=price, amount=amount)
+        payload = {"investor":id, "order":order}
+        cmd = Command(type=NEW_ORDER,payload=payload)
         self.broker.send_message(cmd)
 
-    def sell(self, asset, price, amount):
-        order = Order(type=ASK_TYPE, asset=asset, price=price, amount=amount)
-        cmd = Command(type=NEW_ORDER,payload=order)
+    def sell(self, assetid, price, amount):
+        order = Order(type=ASK_TYPE, assetid=assetid, value=price, amount=amount)
+        payload = {"investor": id, "order": order}
+        cmd = Command(type=NEW_ORDER,payload=payload)
         self.broker.send_message(cmd)

@@ -6,6 +6,10 @@ from decimal import *
 from book_keeper import BookKeeper
 from exchange import Exchange
 from order import Order
+from broker import Broker
+from command import Command
+from investor import Investor
+from constants import NEW_ORDER,CANCEL_ORDER,GET_LAST_PRICE,RESPONSE,EDIT_ORDER,ASK_TYPE,BID_TYPE
 
 getcontext().prec = 2
 from os import system
@@ -106,11 +110,12 @@ def test_exchange():
 
     exchange = Exchange("TestExchange", asset_names=asset_names)
 
-    value = 1.0
-    type = ASK_TYPE
-    amount = 1000
-    order = Order(type, value, amount)
-    exchange.send_message(order)
+    broker = Broker(id=1000,exchange=exchange)
+
+    investor = Investor(id=2000,cap=100000,broker=broker)
+
+    investor.buy(assetid=1,price=5.0,amount=1000)
+
 
 if __name__ == "__main__":
     format = "%(asctime)s: %(message)s"

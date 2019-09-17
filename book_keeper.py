@@ -8,7 +8,9 @@ from constants import BID_TYPE, ASK_TYPE
 
 class BookKeeper:
 
-    name = "test"
+    name = None
+    id = None
+
     bid_list = []
     thread_handle = ""
     messageq = queue.Queue()
@@ -120,9 +122,7 @@ class BookKeeper:
         while True:
             order_message = self.messageq.get()
 
-            logging.info("[New order] Type: %s  Value: %0.2f  Amount: %d", order_message.get_type_str()
-                         , order_message.get_value()
-                         , order_message.get_amount())
+            logging.info("[New order] Type: %d ", order_message.get_type())
 
             self.process_order(order_message)
 
@@ -148,8 +148,9 @@ class BookKeeper:
 
 
     def __init__(self,
-                 nm):
+                 nm,id):
         self.name = nm
+        self.id   = id
         self.thread_handle = threading.Thread(target=self.keeper_thread_function, args=(nm,))
         self.thread_handle.start()
 
@@ -158,6 +159,9 @@ class BookKeeper:
 
     def get_name(self):
         return self.name
+
+    def get_id(self):
+        return self.id
 
     def send_message(self, message):
         self.messageq.put(message)
