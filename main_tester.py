@@ -114,7 +114,8 @@ def test_exchange():
 
     investor = Investor(id=2000,cap=100000,broker=broker)
 
-    investor.buy(assetid=1,price=5.0,amount=1000)
+    for i in range(5):
+        investor.buy(assetid=1,price=5.0,amount=1000)
 
 
 if __name__ == "__main__":

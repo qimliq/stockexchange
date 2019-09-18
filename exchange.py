@@ -56,7 +56,7 @@ class Exchange:
                  nm,
                  asset_names):
         for asset in asset_names:
-            keeper = BookKeeper(nm=asset['name'], id=asset['id'])
+            keeper = BookKeeper(nm=asset['name'], id=asset['id'], exchange=self)
             self.assets.append(keeper)
 
         self.name = nm
