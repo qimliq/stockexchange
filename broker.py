@@ -10,7 +10,7 @@ class Broker:
     id = None
     assets = []
     thread_handle = ""
-    messageq = queue.Queue()
+    messageq = None
     latest_price = None
     exchange = None
 
@@ -39,6 +39,8 @@ class Broker:
 
         self.id = id
         self.exchange = exchange
+
+        self.messageq = queue.Queue()
         self.thread_handle = threading.Thread(target=self.broker_thread_function, args=(id,))
         self.thread_handle.start()
 

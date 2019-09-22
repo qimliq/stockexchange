@@ -9,7 +9,7 @@ class Exchange:
     name = "TestExchange"
     assets = []
     thread_handle = ""
-    messageq = queue.Queue()
+    messageq = None
     latest_price = None
 
     def find_book_keeper(self,id):
@@ -60,6 +60,8 @@ class Exchange:
             self.assets.append(keeper)
 
         self.name = nm
+
+        self.messageq = queue.Queue()
         self.thread_handle = threading.Thread(target=self.exchange_thread_function, args=(nm,))
         self.thread_handle.start()
 

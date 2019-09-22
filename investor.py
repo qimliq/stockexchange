@@ -17,7 +17,7 @@ class Investor:
     orders = []
 
     thread_handle = None
-    messageq = queue.Queue()
+    messageq = None
     money_in_stock = 0
 
     def process_command(self, cmd):
@@ -37,6 +37,8 @@ class Investor:
         self.id = id
         self.capital = cap
         self.broker = broker
+
+        self.messageq = queue.Queue()
 
         self.thread_handle = threading.Thread(target=self.investor_thread_function, args=(id,))
         self.thread_handle.start()
