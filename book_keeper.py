@@ -14,7 +14,7 @@ class BookKeeper:
 
     bid_list = []
     thread_handle = ""
-    messageq = queue.Queue()
+    messageq = None
     latest_price = None
 
     #Sellers will be added to asks list
@@ -144,7 +144,7 @@ class BookKeeper:
         # self.clean_containers()
 
     def keeper_thread_function(self,name):
-        logging.info("BookKeeper for [%s] started", name)
+        logging.info("BookKeeper for [%s][id: %d] started", name, self.id)
         while True:
             cmd = self.messageq.get()
 
@@ -186,6 +186,8 @@ class BookKeeper:
         self.name = nm
         self.id   = id
         self.exchange = exchange
+
+        self.messageq = queue.Queue()
 
         self.thread_handle = threading.Thread(target=self.keeper_thread_function, args=(nm,))
         self.thread_handle.start()
