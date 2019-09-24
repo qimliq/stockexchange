@@ -3,7 +3,7 @@ import queue
 import threading
 
 from order_container import OrderContainer
-from constants import BID_TYPE, ASK_TYPE
+from constants import BID_TYPE, ASK_TYPE, NEW_ORDER, CANCEL_ORDER, EDIT_ORDER
 
 
 class BookKeeper:
@@ -32,6 +32,104 @@ class BookKeeper:
             if bid_container.get_orders().empty() is True:
                 self.bids.remove(bid_container)
 
+    def process_ask_order(self,order,cmd):
+        def sorter_fcn(a):
+            c = a.get_value()
+            return c
+        value = order.get_value()
+        amount = order.get_amount()
+        new_ask = True
+        matched = False
+        for i in range(len(self.bids)):
+            bid_container = self.bids[i]
+            if value <= bid_container.get_value():
+                for command in list(bid_container.get_orders().queue):
+                    payload = command.get_payload()
+                    subcmd = payload['subcommand']
+                    subcmd_payload = subcmd.get_payload()
+
+                    item = subcmd_payload['order']
+
+                    self.latest_price = bid_container.get_value()
+                    if amount <= item.get_amount():
+                        item.set_amount(item.get_amount() - amount)
+                        amount = 0
+                        break
+                    else:
+                        amount = amount - item.get_amount()
+                        item.set_amount(0)
+                        order.set_amount(amount)
+                        bid_container.get_next_order()
+                        # if bid_container.get_orders().empty() is True:
+                        #     self.bids.remove(bid_container)
+                if amount == 0:
+                    matched = True
+                    break
+
+        if matched is False:
+            # find the container
+            for ask_container in self.asks:
+                if value == ask_container.get_value():
+                    ask_container.add_new_order(cmd)
+                    new_ask = False
+                    break
+            if new_ask == True:
+                new_container = OrderContainer(type=ASK_TYPE, value=value)
+                new_container.add_new_order(cmd)
+                self.asks.append(new_container)
+
+        self.asks = sorted(self.asks, key=sorter_fcn, reverse=True)
+
+    def process_bid_order(self,order,cmd):
+        def sorter_fcn(a):
+            c = a.get_value()
+            return c
+        value = order.get_value()
+        amount = order.get_amount()
+
+        new_bid = True
+        matched = False
+        for i in range(len(self.asks)):
+            ask_container = list(reversed(self.asks))[i]
+            if value >= ask_container.get_value():
+                for command in list(ask_container.get_orders().queue):
+                    payload = command.get_payload()
+                    subcmd = payload['subcommand']
+                    subcmd_payload = subcmd.get_payload()
+
+                    item = subcmd_payload['order']
+
+                    self.latest_price = ask_container.get_value()
+                    if amount <= item.get_amount():
+                        item.set_amount(item.get_amount() - amount)
+                        amount = 0
+                        break
+                    else:
+                        amount = amount - item.get_amount()
+                        item.set_amount(0)
+                        order.set_amount(amount)
+                        ask_container.get_next_order()
+                        # if ask_container.get_orders().empty() is True:
+                        #     self.asks.remove(ask_container)
+
+                if amount == 0:
+                    matched = True
+                    break
+
+        if matched is False:
+            # find the container
+            for bid_container in self.bids:
+                if value == bid_container.get_value():
+                    bid_container.add_new_order(cmd)
+                    new_bid = False
+                    break
+            if new_bid == True:
+                new_container = OrderContainer(type=BID_TYPE, value=value)
+                new_container.add_new_order(cmd)
+                self.bids.append(new_container)
+
+        self.bids = sorted(self.bids, key=sorter_fcn, reverse=True)
+
     def process_command(self, cmd):
 
         # investor : type + payload where payload: dict(investor id, order)
@@ -43,103 +141,23 @@ class BookKeeper:
 
         subcmd_payload = subcmd.get_payload()
 
-        investor_id = subcmd_payload['investor']
         order = subcmd_payload['order']
 
         type = order.get_type()
         value = order.get_value()
         amount = order.get_amount()
 
-        new_ask = True
-        new_bid = True
-        def fcn(a):
-            c = a.get_value()
-            return c
+        cmd_type = cmd.get_type()
 
-        if type == ASK_TYPE:
-            matched = False
-            for i in range(len(self.bids)):
-                bid_container = self.bids[i]
-                if value <= bid_container.get_value():
-                    for command in list(bid_container.get_orders().queue):
-                        payload = command.get_payload()
-                        subcmd = payload['subcommand']
-                        subcmd_payload = subcmd.get_payload()
-
-                        item = subcmd_payload['order']
-
-                        self.latest_price = bid_container.get_value()
-                        if amount <= item.get_amount():
-                            item.set_amount(item.get_amount() - amount)
-                            amount = 0
-                            break
-                        else:
-                            amount = amount - item.get_amount()
-                            item.set_amount(0)
-                            order.set_amount(amount)
-                            bid_container.get_next_order()
-                            # if bid_container.get_orders().empty() is True:
-                            #     self.bids.remove(bid_container)
-                    if amount == 0:
-                        matched = True
-                        break
-
-            if matched is False:
-                # find the container
-                for ask_container in self.asks:
-                    if value == ask_container.get_value():
-                        ask_container.add_new_order(cmd)
-                        new_ask = False
-                        break
-                if new_ask == True:
-                    new_container = OrderContainer(type=ASK_TYPE, value=value)
-                    new_container.add_new_order(cmd)
-                    self.asks.append(new_container)
-
-            self.asks = sorted(self.asks, key=fcn, reverse=True)
-
-        if type == BID_TYPE:
-            matched = False
-            for i in range(len(self.asks)):
-                ask_container = list(reversed(self.asks))[i]
-                if value >= ask_container.get_value():
-                    for command in list(ask_container.get_orders().queue):
-                        payload = command.get_payload()
-                        subcmd = payload['subcommand']
-                        subcmd_payload = subcmd.get_payload()
-
-                        item = subcmd_payload['order']
-
-                        self.latest_price = ask_container.get_value()
-                        if amount <= item.get_amount():
-                            item.set_amount(item.get_amount() - amount)
-                            amount = 0
-                            break
-                        else:
-                            amount = amount - item.get_amount()
-                            item.set_amount(0)
-                            order.set_amount(amount)
-                            ask_container.get_next_order()
-                            # if ask_container.get_orders().empty() is True:
-                            #     self.asks.remove(ask_container)
-
-                    if amount == 0:
-                        matched = True
-                        break
-
-            if matched is False:
-                # find the container
-                for bid_container in self.bids:
-                    if value == bid_container.get_value():
-                        bid_container.add_new_order(cmd)
-                        new_bid = False
-                        break
-                if new_bid == True:
-                    new_container = OrderContainer(type=BID_TYPE, value=value)
-                    new_container.add_new_order(cmd)
-                    self.bids.append(new_container)
-
-            self.bids = sorted(self.bids, key=fcn, reverse=True)
+        if cmd_type == NEW_ORDER:
+            if type == ASK_TYPE:
+                self.process_ask_order(order,cmd)
+            elif type == BID_TYPE:
+                self.process_bid_order(order,cmd)
+        elif cmd_type == CANCEL_ORDER:
+            print("TODO")
+        elif cmd_type == EDIT_ORDER:
+            print("TODO")
 
         # self.clean_containers()
 
@@ -200,6 +218,9 @@ class BookKeeper:
 
     def get_id(self):
         return self.id
+
+    def get_latest_price(self):
+        return self.latest_price
 
     def send_message(self, message):
         self.messageq.put(message)
