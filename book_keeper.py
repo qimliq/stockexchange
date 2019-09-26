@@ -3,7 +3,8 @@ import queue
 import threading
 
 from order_container import OrderContainer
-from constants import BID_TYPE, ASK_TYPE, NEW_ORDER, CANCEL_ORDER, EDIT_ORDER
+from command import Command
+from constants import BID_TYPE, ASK_TYPE, NEW_ORDER, CANCEL_ORDER, EDIT_ORDER, RESPONSE, RESPONSE_ACK
 
 
 class BookKeeper:
@@ -40,6 +41,7 @@ class BookKeeper:
         amount = order.get_amount()
         new_ask = True
         matched = False
+
         for i in range(len(self.bids)):
             bid_container = self.bids[i]
             if value <= bid_container.get_value():
@@ -77,6 +79,7 @@ class BookKeeper:
                 new_container = OrderContainer(type=ASK_TYPE, value=value)
                 new_container.add_new_order(cmd)
                 self.asks.append(new_container)
+
 
         self.asks = sorted(self.asks, key=sorter_fcn, reverse=True)
 
@@ -142,12 +145,19 @@ class BookKeeper:
         subcmd_payload = subcmd.get_payload()
 
         order = subcmd_payload['order']
+        investor_id = subcmd_payload['investor']
 
         type = order.get_type()
         value = order.get_value()
         amount = order.get_amount()
 
         cmd_type = cmd.get_type()
+
+        ##############
+        # send ACK
+        response_payload = {"resp_type": RESPONSE_ACK, "payload":cmd}
+        response = Command(type=RESPONSE, payload=response_payload)
+        self.exchange.send_message(response)
 
         if cmd_type == NEW_ORDER:
             if type == ASK_TYPE:
@@ -166,7 +176,7 @@ class BookKeeper:
         while True:
             cmd = self.messageq.get()
 
-            logging.info("[Bookkeeper [%d]][New order] Type: %d ", self.id, cmd.get_type())
+            logging.debug("[Bookkeeper [%d]][New order] Type: %d ", self.id, cmd.get_type())
 
             self.process_command(cmd)
 
@@ -180,7 +190,7 @@ class BookKeeper:
                     amnt_str += "%d |" % (item.get_amount())
 
                 if amnt_str is not "":
-                    logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
+                    logging.debug("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
 
             if self.latest_price is not None:
                 logging.info("---------------------------------------------------[Latest Price] [%0.2f]", self.latest_price)
@@ -194,7 +204,7 @@ class BookKeeper:
                     item = subcmd_payload['order']
                     amnt_str += "%d |" % (item.get_amount())
                 if amnt_str is not "":
-                    logging.info("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
+                    logging.debug("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
 
 
 

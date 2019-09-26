@@ -20,15 +20,20 @@ class Investor:
     messageq = None
     money_in_stock = 0
 
-    def process_command(self, cmd):
+    def process_command(self, command):
+
+
+
+        response_payload = command.get_payload()
+        response_type = response_payload["resp_type"]
+
+        logging.info("[Investor [%d]][New command] RespType: %d", self.id, response_type)
+
         return 0
 
     def investor_thread_function(self,id):
         while True:
             command = self.messageq.get()
-
-            logging.info("[New command] Type: %d", command.get_type())
-
             self.process_command(command)
 
     def __init__(self,
@@ -60,12 +65,12 @@ class Investor:
 
     def buy(self, assetid, price, amount):
         order = Order(type=BID_TYPE, assetid=assetid, value=price, amount=amount)
-        payload = {"investor":id, "order":order}
+        payload = {"investor":self, "order":order}
         cmd = Command(type=NEW_ORDER,payload=payload)
         self.broker.send_message(cmd)
 
     def sell(self, assetid, price, amount):
         order = Order(type=ASK_TYPE, assetid=assetid, value=price, amount=amount)
-        payload = {"investor": id, "order": order}
+        payload = {"investor": self, "order": order}
         cmd = Command(type=NEW_ORDER,payload=payload)
         self.broker.send_message(cmd)

@@ -40,7 +40,11 @@ class Exchange:
             if keeper != None:
                 keeper.send_message(cmd)
         else:
-            print("to broker")
+            response_payload = cmd.get_payload()
+            response_payload_cmd = response_payload["payload"]
+            broker_cmd = response_payload_cmd.get_payload()
+            broker = broker_cmd["broker"]
+            broker.send_message(cmd)
 
         return 0
 
@@ -48,7 +52,7 @@ class Exchange:
         while True:
             command = self.messageq.get()
 
-            logging.info("[Exchange] [New command] Type: %d", command.get_type())
+            logging.debug("[Exchange] [New command] Type: %d", command.get_type())
 
             self.process_command(command)
 

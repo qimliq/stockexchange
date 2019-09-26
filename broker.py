@@ -23,14 +23,20 @@ class Broker:
             exchange_cmd = Command(type=type, payload=payload)
             self.exchange.send_message(exchange_cmd)
         else:
-            print("to investor")
+            response_payload = cmd.get_payload()
+            response_payload_cmd = response_payload["payload"]
+            broker_cmd = response_payload_cmd.get_payload()
+            investor_cmd = broker_cmd["subcommand"]
+            investor_payload = investor_cmd.get_payload()
+            investor = investor_payload["investor"]
+            investor.send_message(cmd)
 
 
     def broker_thread_function(self,id):
         while True:
             command = self.messageq.get()
 
-            logging.info("[Broker][New command] Type: %d", command.get_type())
+            logging.debug("[Broker][New command] Type: %d", command.get_type())
 
             self.process_command(command)
 
