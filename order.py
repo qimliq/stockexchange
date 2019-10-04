@@ -6,7 +6,7 @@ getcontext().prec =2
 
 class Order:
     asset_id = None
-    order_type = BID_TYPE
+    order_type = None
     order_value = round(0.0,2)
     order_amount = 0
 

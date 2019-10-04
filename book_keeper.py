@@ -4,7 +4,10 @@ import threading
 
 from order_container import OrderContainer
 from command import Command
-from constants import BID_TYPE, ASK_TYPE, NEW_ORDER, CANCEL_ORDER, EDIT_ORDER, RESPONSE, RESPONSE_ACK
+from constants import BID_TYPE, ASK_TYPE, NEW_ORDER, CANCEL_ORDER, EDIT_ORDER, RESPONSE, RESPONSE_ACK, \
+                      ORDER_NOT_MATCHED, ORDER_PARTIALLY_MATCHED, ORDER_FULLY_MATCHED, \
+                      RESPONSE_ORDER_FULLY_MATCHED, RESPONSE_ORDER_PARTIALLY_MATCHED, RESPONSE_ORDER_CANCELLED, \
+                      RESPONSE_ORDER_EDITED
 
 
 class BookKeeper:
@@ -40,7 +43,7 @@ class BookKeeper:
         value = order.get_value()
         amount = order.get_amount()
         new_ask = True
-        matched = False
+        matched = ORDER_NOT_MATCHED
 
         for i in range(len(self.bids)):
             bid_container = self.bids[i]
@@ -53,22 +56,59 @@ class BookKeeper:
                     item = subcmd_payload['order']
 
                     self.latest_price = bid_container.get_value()
-                    if amount <= item.get_amount():
+                    if amount < item.get_amount():
                         item.set_amount(item.get_amount() - amount)
                         amount = 0
+                        # send 2 messages
+
+                        # First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_FULLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_PARTIALLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        break
+                    elif amount == item.get_amount():
+                        item.set_amount(item.get_amount() - amount)
+                        amount = 0
+                        # send 2 messages
+
+                        # First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_FULLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
                         break
                     else:
                         amount = amount - item.get_amount()
                         item.set_amount(0)
                         order.set_amount(amount)
                         bid_container.get_next_order()
+                        # send 2 messages
+
+                        # First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_PARTIALLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_PARTIALLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
                         # if bid_container.get_orders().empty() is True:
                         #     self.bids.remove(bid_container)
-                if amount == 0:
-                    matched = True
-                    break
 
-        if matched is False:
+        if matched is ORDER_NOT_MATCHED:
             # find the container
             for ask_container in self.asks:
                 if value == ask_container.get_value():
@@ -91,7 +131,7 @@ class BookKeeper:
         amount = order.get_amount()
 
         new_bid = True
-        matched = False
+        matched = ORDER_NOT_MATCHED
         for i in range(len(self.asks)):
             ask_container = list(reversed(self.asks))[i]
             if value >= ask_container.get_value():
@@ -103,23 +143,65 @@ class BookKeeper:
                     item = subcmd_payload['order']
 
                     self.latest_price = ask_container.get_value()
-                    if amount <= item.get_amount():
+                    if amount < item.get_amount():
                         item.set_amount(item.get_amount() - amount)
                         amount = 0
+                        #send 2 messages
+
+                        #First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_FULLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_PARTIALLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+
+
+                        break
+                    elif amount == item.get_amount():
+                        item.set_amount(item.get_amount() - amount)
+                        amount = 0
+
+                        # send 2 messages
+
+                        # First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_FULLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+
                         break
                     else:
                         amount = amount - item.get_amount()
                         item.set_amount(0)
                         order.set_amount(amount)
                         ask_container.get_next_order()
+
+                        # send 2 messages
+
+                        # First - Fully Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_PARTIALLY_MATCHED, "payload": cmd}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+                        matched = ORDER_PARTIALLY_MATCHED
+
+                        # Second - Partially Matched
+                        response_payload = {"resp_type": RESPONSE_ORDER_FULLY_MATCHED, "payload": command}
+                        response = Command(type=RESPONSE, payload=response_payload)
+                        self.exchange.send_message(response)
+
                         # if ask_container.get_orders().empty() is True:
                         #     self.asks.remove(ask_container)
 
-                if amount == 0:
-                    matched = True
-                    break
-
-        if matched is False:
+        if matched is ORDER_NOT_MATCHED:
             # find the container
             for bid_container in self.bids:
                 if value == bid_container.get_value():
@@ -153,6 +235,8 @@ class BookKeeper:
 
         cmd_type = cmd.get_type()
 
+        logging.info("[Bookkeeper [%d]][Cmd Type: %d][Order Type:%d]", self.id, cmd_type, type)
+
         ##############
         # send ACK
         response_payload = {"resp_type": RESPONSE_ACK, "payload":cmd}
@@ -176,8 +260,6 @@ class BookKeeper:
         while True:
             cmd = self.messageq.get()
 
-            logging.debug("[Bookkeeper [%d]][New order] Type: %d ", self.id, cmd.get_type())
-
             self.process_command(cmd)
 
             for ask in self.asks:
@@ -190,7 +272,7 @@ class BookKeeper:
                     amnt_str += "%d |" % (item.get_amount())
 
                 if amnt_str is not "":
-                    logging.debug("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
+                    logging.info("[Ask] [%0.2f] - %s",ask.get_value(),amnt_str)
 
             if self.latest_price is not None:
                 logging.info("---------------------------------------------------[Latest Price] [%0.2f]", self.latest_price)
@@ -204,7 +286,7 @@ class BookKeeper:
                     item = subcmd_payload['order']
                     amnt_str += "%d |" % (item.get_amount())
                 if amnt_str is not "":
-                    logging.debug("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
+                    logging.info("[Bid] [%0.2f] - %s",bid.get_value(),amnt_str)
 
 
 

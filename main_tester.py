@@ -31,11 +31,15 @@ def test_exchange():
 
     broker = Broker(id=1000,exchange=exchange)
 
-    investor = Investor(id=2000,cap=100000,broker=broker)
+    investor1 = Investor(id=2000,cap=100000,broker=broker)
+
+    for i in range(1):
+        investor1.buy(assetid=1,price=5.0,amount=1000)
+
+    investor2 = Investor(id=2001, cap=100000, broker=broker)
 
     for i in range(5):
-        investor.buy(assetid=1,price=5.0,amount=1000)
-
+        investor2.sell(assetid=1, price=5.0, amount=100)
 
 if __name__ == "__main__":
     format = "%(asctime)s: %(message)s"
