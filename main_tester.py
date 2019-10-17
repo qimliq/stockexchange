@@ -14,9 +14,6 @@ from constants import NEW_ORDER,CANCEL_ORDER,GET_LAST_PRICE,RESPONSE,EDIT_ORDER,
 getcontext().prec = 2
 from os import system
 
-BID_TYPE = 0
-ASK_TYPE = 1
-
 def test_exchange():
     asset_names = [{'name': "Asset 1", 'id': 1},
                    {'name': "Asset 2", 'id': 2},
